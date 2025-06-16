@@ -1,0 +1,228 @@
+#include <iostream>
+#include <vector>
+#include <string> // Required for getline
+using namespace std;
+
+class BankAccount
+{
+private:
+    string name;
+    int accountNum;
+    double balance;
+    BankAccount *next;
+    BankAccount *prev;
+
+public:
+    BankAccount(string n, int ac, double bal)
+    {
+        name = n;
+        accountNum = ac;
+        balance = bal;
+        next = nullptr;
+        prev = nullptr;
+    }
+
+    string getName() { return name; }
+    int getAccountNum() { return accountNum; }
+    double getBalance() { return balance; }
+
+    void deposit(double amount)
+    {
+        balance += amount;
+    }
+
+    bool withdraw(double amount)
+    {
+        if (balance >= amount)
+        {
+            balance -= amount;
+            cout << "\t\tWithdraw Successful.\n";
+            return true;
+        }
+        else
+        {
+            cout << "\t\tInsufficient Balance.\n";
+            return false;
+        }
+    }
+
+    BankAccount *getNext() { return next; }
+    BankAccount *getPrev() { return prev; }
+
+    friend class BankManagement;
+};
+
+class BankManagement
+{
+private:
+    BankAccount *head;
+
+public:
+    BankManagement() { head = nullptr; }
+
+    void AddAccount(string name, int accountNum, double balance)
+    {
+        BankAccount *newAccount = new BankAccount(name, accountNum, balance);
+        if (head == nullptr)
+        {
+            head = newAccount;
+        }
+        else
+        {
+            newAccount->next = head;
+            head->prev = newAccount;
+            head = newAccount;
+        }
+        cout << "\t\tAccount Created Successfully.\n";
+    }
+
+    void showAllAccounts()
+    {
+        cout << "\t\tAll Account Holders:\n";
+        BankAccount *current = head;
+        while (current != nullptr)
+        {
+            cout << "Name: " << current->getName()
+                 << " | Account Number: " << current->getAccountNum()
+                 << " | Balance: " << current->getBalance() << endl;
+            current = current->getNext();
+        }
+    }
+
+    BankAccount *searchAccount(int account)
+    {
+        BankAccount *current = head;
+        while (current != nullptr)
+        {
+            if (current->getAccountNum() == account)
+            {
+                cout << "\t\tAccount Found:\n";
+                cout << "Name: " << current->getName()
+                     << " | Account Number: " << current->getAccountNum()
+                     << " | Balance: " << current->getBalance() << endl;
+                return current;
+            }
+            current = current->getNext();
+        }
+        cout << "\t\tAccount Not Found.\n";
+        return nullptr;
+    }
+
+    void depositMoney(int accountNum, double amount)
+    {
+        BankAccount *account = searchAccount(accountNum);
+        if (account != nullptr)
+        {
+            account->deposit(amount);
+            cout << "\t\t" << amount << " Deposited Successfully.\n";
+        }
+    }
+
+    void withdrawMoney(int accountNum, double amount)
+    {
+        BankAccount *account = searchAccount(accountNum);
+        if (account != nullptr)
+        {
+            account->withdraw(amount);
+        }
+    }
+
+    ~BankManagement()
+    {
+        while (head != nullptr)
+        {
+            BankAccount *temp = head;
+            head = head->getNext();
+            delete temp;
+        }
+    }
+};
+
+int main()
+{
+    BankManagement bank;
+    int choice;
+    char op;
+    do
+    {
+        // system("cls"); // Commented out for cross-platform compatibility
+        cout << "\n\t\t:: Bank Management System ::\n";
+        cout << "\t\t1. Create New Account\n";
+        cout << "\t\t2. Show All Accounts\n";
+        cout << "\t\t3. Search Account\n";
+        cout << "\t\t4. Deposit Money\n";
+        cout << "\t\t5. Withdraw Money\n";
+        cout << "\t\t6. Exit\n";
+        cout << "\t\t-------------------------------\n";
+        cout << "\t\tEnter Your Choice: ";
+        cin >> choice;
+        cin.ignore(); // Clear newline from input buffer
+
+        switch (choice)
+        {
+        case 1:
+        {
+            string name;
+            int accountNum;
+            double balance;
+            cout << "\t\tEnter Name: ";
+            getline(cin, name);
+            cout << "\t\tEnter Account Number: ";
+            cin >> accountNum;
+            cout << "\t\tEnter Initial Balance: ";
+            cin >> balance;
+            bank.AddAccount(name, accountNum, balance);
+            break;
+        }
+        case 2:
+            bank.showAllAccounts();
+            break;
+
+        case 3:
+        {
+            int accountNum;
+            cout << "\t\tEnter Account Number: ";
+            cin >> accountNum;
+            bank.searchAccount(accountNum);
+            break;
+        }
+
+        case 4:
+        {
+            int accountNum;
+            double amount;
+            cout << "\t\tEnter Account Number to Deposit Money: ";
+            cin >> accountNum;
+            cout << "\t\tEnter Amount to Deposit: ";
+            cin >> amount;
+            bank.depositMoney(accountNum, amount);
+            break;
+        }
+
+        case 5:
+        {
+            int accountNum;
+            double amount;
+            cout << "\t\tEnter Account Number to Withdraw Money: ";
+            cin >> accountNum;
+            cout << "\t\tEnter Amount to Withdraw: ";
+            cin >> amount;
+            bank.withdrawMoney(accountNum, amount);
+            break;
+        }
+
+        case 6:
+            cout << "\t\tExiting the Program. Goodbye!\n";
+            return 0;
+
+        default:
+            cout << "\t\tInvalid Choice. Try again.\n";
+        }
+
+        cout << "\t\tDo You Want to Continue? (Y/N): ";
+        cin >> op;
+        cin.ignore(); // Prevent issues with getline on next loop
+    } while (op == 'y' || op == 'Y');
+
+    return 0;
+}
